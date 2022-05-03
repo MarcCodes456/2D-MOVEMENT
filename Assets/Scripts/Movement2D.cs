@@ -9,6 +9,9 @@ using UnityEngine;
 //Define the ground and wall mask layers (In the script and in the GameObjects)
 //Adjust and play around with the other variables (Some require you to activate gizmos in order to visualize)
 
+
+////////////[MY WALL JUMP CHANGES]////////////
+
 public class Movement2D : MonoBehaviour
 {
     [Header("Components")]
@@ -49,6 +52,8 @@ public class Movement2D : MonoBehaviour
     [SerializeField] private float _wallSlideModifier = 0.5f;
     [SerializeField] private float _wallRunModifier = 0.85f;
     [SerializeField] private float _wallJumpXVelocityHaltDelay = 0.2f;
+    
+    //What does it mean by "Input.GetButton('WallGrab')"
     private bool _wallGrab => _onWall && !_onGround && Input.GetButton("WallGrab") && !_wallRun;
     private bool _wallSlide => _onWall && !_onGround && !Input.GetButton("WallGrab") && _rb.velocity.y < 0f && !_wallRun;
     private bool _wallRun => _onWall && _verticalDirection > 0f;
@@ -123,16 +128,17 @@ public class Movement2D : MonoBehaviour
                 {
                     if (!_wallRun && (_onRightWall && _horizontalDirection > 0f || !_onRightWall && _horizontalDirection < 0f))
                     {
-                        StartCoroutine(NeutralWallJump());
-                    }
-                    else
-                    {
+                        /*
+                        Test out both of these to see which one works unless both are dumb
                         WallJump();
-                    }
+                        StartCoroutine(NeutralWallJump());
+                        */
+                    } 
                     Flip();
                 }
                 else
                 {
+                    //Check to see if you actual need this
                     Jump(Vector2.up);
                 }
             }
@@ -140,8 +146,10 @@ public class Movement2D : MonoBehaviour
             {
                 if (_wallSlide) WallSlide();
                 if (_wallGrab) WallGrab();
-                if (_wallRun) WallRun();
                 if (_onWall) StickToWall();
+                //if (_wallRun) WallRun();
+                //Might be the problem for janky wall stuff
+                
             }
         }
         if (_canCornerCorrect) CornerCorrect(_rb.velocity.y);
@@ -230,6 +238,7 @@ public class Movement2D : MonoBehaviour
     void WallGrab()
     {
         _rb.gravityScale = 0f;
+        // line below stops player from moving might have to delete
         _rb.velocity = Vector2.zero;
     }
 
@@ -238,6 +247,7 @@ public class Movement2D : MonoBehaviour
         _rb.velocity = new Vector2(_rb.velocity.x, -_maxMoveSpeed * _wallSlideModifier);
     }
 
+//Could get rid of this not gonna use wall run so no need for it
     void WallRun()
     {
         _rb.velocity = new Vector2(_rb.velocity.x, _verticalDirection * _maxMoveSpeed * _wallRunModifier);
@@ -245,7 +255,7 @@ public class Movement2D : MonoBehaviour
 
     void StickToWall()
     {
-        //Push player torwards wall
+    //Push player torwards wall[Check this]
         if (_onRightWall && _horizontalDirection >= 0f)
         {
             _rb.velocity = new Vector2(1f, _rb.velocity.y);
@@ -255,7 +265,8 @@ public class Movement2D : MonoBehaviour
             _rb.velocity = new Vector2(-1f, _rb.velocity.y);
         }
 
-        //Face correct direction
+
+    //Face correct direction[I Could delete this but im to lazy]
         if (_onRightWall && !_facingRight)
         {
             Flip();
@@ -264,6 +275,8 @@ public class Movement2D : MonoBehaviour
         {
             Flip();
         }
+        
+        
     }
 
     void Flip()
@@ -363,6 +376,8 @@ public class Movement2D : MonoBehaviour
             }
         }
     }
+
+
 
     void CornerCorrect(float Yvelocity)
     {
